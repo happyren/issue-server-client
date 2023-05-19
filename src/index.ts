@@ -2,79 +2,65 @@ import * as dotenv from "dotenv";
 import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import fs from "fs";
-import path from "path";
+import { Issue } from "./types/issue";
 
 dotenv.config();
 const app = express();
 
 app.use(helmet());
 app.use(cors({
-  origin: "https://chat.openai.com",
+  origin: "http://localhost:3000", // allow frontend to access backend
 }));
 app.use(express.json());
 
 const todo: Record<string, any[]> = {};
 
+const issues: Issue[] = [
+  {
+    id: "1",
+    title: "Issue 1",
+    description: "This is the first issue",
+  },
+  {
+    id: "2",
+    title: "Issue 2",
+    description: "This is the second issue",
+  }
+]
+
 // app routes
-app.post("/todos/:username", async (req: Request, res: Response) => {
-  const username = req.params.username;
-  const request = req.body;
+app.post("/issues", async (req: Request, res: Response) => {
+  console.log(req.body);
+  res.sendStatus(200);
+});
 
-  if (!todo[username]) {
-    todo[username] = [];
+app.get("/issues/:id", async (req: Request, res: Response) => {
+  const issue = issues.find((issue) => issue.id === req.params.id);
+  if (!issue) {
+    return res.sendStatus(404);
   }
-
-  todo[username].push(request.todo);
-  res.status(200).send('OK');
+  res.json(issue);
 });
 
-app.get("/todos/:username", async (req: Request, res: Response) => {
-  const username = req.params.username;
-  res.status(200).json(todo[username] || []);
-});
-
-app.delete('/todos/:username', async (req: Request, res: Response) => {
-  const username = req.params.username;
-  const request = req.body;
-  const todo_idx = request.todo_idx;
-
-  if (0 <= todo_idx && todo_idx < todo[username].length) {
-    todo[username].splice(todo_idx, 1);
+app.delete('/issues/:id', async (req: Request, res: Response) => {
+  const issueIndex = issues.findIndex((issue) => issue.id === req.params.id);
+  if (issueIndex === -1) {
+    return res.sendStatus(404);
   }
-
-  res.status(200).send('OK');
+  console.log(issues[issueIndex]);
+  issues.splice(issueIndex, 1);
+  res.sendStatus(200);
 });
 
-app.get('/logo.png', (req: Request, res: Response) => {
-  const filename = 'logo.png';
-  res.sendFile(filename,  { root: './' }, (err) => {
-    if (err) {
-      res.status(404).send('File not found');
-    }
-  });
-});
-
-app.get('/.well-known/ai-plugin.json', (req: Request, res: Response) => {
-  fs.readFile('./.well-known/ai-plugin.json', 'utf-8', (err, data) => {
-    if (err) {
-      res.status(404).send('File not found');
-    } else {
-      res.set('Content-Type', 'text/json');
-      res.status(200).send(data);
-    }
-  });
-});
-
-app.get('/openapi.yaml', (req: Request, res: Response) => {
-  fs.readFile('./public/openapi.yaml', 'utf-8', (err, data) => {
-    if (err) {
-      res.status(404).send('File not found');
-    } else {
-      res.set('Content-Type', 'text/yaml');
-      res.status(200).send(data);
-    }
-  });
+app.put('/issues', (req: Request, res: Response) => {
+  // update issue with id matching req.body.id
+  const issueIndex = issues.findIndex((issue) => issue.id === req.body.id);
+  if (issueIndex === -1) {
+    return res.sendStatus(404);
+  }
+  issues[issueIndex] = req.body;
+  console.log(issues[issueIndex]);
+  res.sendStatus(200);
 });
 
 // app starts listening
