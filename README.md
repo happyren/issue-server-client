@@ -19,5 +19,5 @@ pnpm run server
 To run client
 
 ```bash
-pnpm run client
+node client.js
 ```
