@@ -30,8 +30,9 @@ const issues: Issue[] = [
 
 // app routes
 app.post("/issues", async (req: Request, res: Response) => {
-  console.log(req.body);
-  res.sendStatus(200);
+  const issue: Issue = req.body;
+  issues.push(issue);
+  res.json(issue);
 });
 
 app.get("/issues/:id", async (req: Request, res: Response) => {
