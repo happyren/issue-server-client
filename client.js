@@ -33,7 +33,7 @@ const  readIssue = (id) => {
 }
 
 const updateIssue = (issue) => {
-  axios.put(`${apiUrl}/issues/${issue.id}`, issue)
+  axios.put(`${apiUrl}/issues/`, issue)
     .then(res => {
       console.log("Issue updated:", res.data);
       prompt();
@@ -52,6 +52,7 @@ const updateIssuePrompt = () => {
       _title = title;
       rl.question("Enter issue description: ", (description) => {
         _description = description;
+        console.log(_id, _title, _description);
         updateIssue({ id: _id, title: _title, description: _description });
       });
     });
