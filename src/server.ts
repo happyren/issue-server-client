@@ -13,8 +13,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const todo: Record<string, any[]> = {};
-
 const issues: Issue[] = [
   {
     id: "1",
@@ -30,6 +28,9 @@ const issues: Issue[] = [
 
 // app routes
 app.post("/issues", async (req: Request, res: Response) => {
+  if (issues.find((issue) => issue.id === req.body.id)) {
+    return res.sendStatus(400);
+  }
   const issue: Issue = req.body;
   issues.push(issue);
   res.json(issue);
